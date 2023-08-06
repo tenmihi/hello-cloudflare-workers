@@ -10,7 +10,7 @@
 
 export interface Env {
 	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
-	// MY_KV_NAMESPACE: KVNamespace;
+	MY_KV: KVNamespace;
 	//
 	// Example binding to Durable Object. Learn more at https://developers.cloudflare.com/workers/runtime-apis/durable-objects/
 	// MY_DURABLE_OBJECT: DurableObjectNamespace;
@@ -27,9 +27,23 @@ export interface Env {
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+		const { searchParams } = new URL(request.url);
+		const name = searchParams.get('name');
+
+		if (name === null) {
+			return new Response('Invalid parameter', { status: 400 });
+		}
+
+		const key = `pp_${name}`;
+		const val: null | string = await env.MY_KV.get(key);
+		const num = val === null ? 1 : Number(val) + 1;
+
+		await env.MY_KV.put(key, `${num}`);
+
 		const headers = new Headers({
 			'Content-Type': 'application/json',
 		});
-		return new Response(JSON.stringify({ message: 'Hello cloud flare!' }), { headers });
+
+		return new Response(JSON.stringify({ name, num }), { headers });
 	},
 };
