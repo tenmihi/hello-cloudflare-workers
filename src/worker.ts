@@ -36,14 +36,14 @@ export default {
 
 		const key = `pp_${name}`;
 		const val: null | string = await env.MY_KV.get(key);
-		const num = val === null ? 1 : Number(val) + 1;
+		const count = val === null ? 1 : Number(val) + 1;
 
-		await env.MY_KV.put(key, `${num}`);
+		await env.MY_KV.put(key, `${count}`);
 
 		const headers = new Headers({
-			'Content-Type': 'application/json',
+			'Content-Type': 'text/plain',
 		});
 
-		return new Response(JSON.stringify({ name, num }), { headers });
+		return new Response(`name: ${name}, count: ${count}`, { headers });
 	},
 };
